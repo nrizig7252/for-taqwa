@@ -454,7 +454,8 @@ img{max-width:100%}
   function loadLocal(){
     try { var raw = localStorage.getItem(KEY); if(raw){ var v = JSON.parse(raw); if(v && Array.isArray(v.answers)) saved = v; } } catch(e){}
   }
-  function hasSaved(){ return saved.done || saved.answers.some(function(a){ return a && a.trim(); }); }
+  // only offer the look-back once all three wishes are made, so nothing is revealed early
+  function hasSaved(){ return saved.done === true; }
   var writing = Promise.resolve();
   function persist(){
     try { localStorage.setItem(KEY, JSON.stringify(saved)); } catch(e){}
