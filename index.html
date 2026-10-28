@@ -172,7 +172,7 @@ button{font:inherit;touch-action:manipulation;-webkit-tap-highlight-color:transp
   align-self:flex-start;background:var(--paper-ink);color:var(--paper);border:0;border-radius:999px;
   padding:11px 22px;font-size:14px;letter-spacing:.06em;cursor:pointer;margin-top:4px;
 }
-.btn:hover{background:var(--leaf)}
+@media (hover:hover){.btn:hover{background:var(--leaf)}}
 
 /* ---------- Letter ---------- */
 .letter{
@@ -203,7 +203,7 @@ button{font:inherit;touch-action:manipulation;-webkit-tap-highlight-color:transp
   font-family:var(--f-body);font-size:13px;letter-spacing:.18em;text-transform:uppercase;
   background:none;border:1px solid rgba(244,195,187,.5);color:var(--blush);padding:10px 20px;border-radius:999px;cursor:pointer;
 }
-.replay:hover{background:rgba(244,195,187,.1)}
+@media (hover:hover){.replay:hover{background:rgba(244,195,187,.1)}}
 
 .keepsake{width:100%;box-sizing:border-box;border:1px solid rgba(244,195,187,.35);border-radius:4px;padding:24px clamp(18px,5vw,30px);text-align:left;display:flex;flex-direction:column;gap:14px}
 .ks-title{font-family:var(--f-script);font-weight:400;font-size:38px;line-height:1;margin:0;color:var(--blush)}
@@ -219,7 +219,7 @@ button{font:inherit;touch-action:manipulation;-webkit-tap-highlight-color:transp
 .ks-private{margin:0;font-size:13px;color:var(--muted)}
 .ks-actions{display:flex;flex-wrap:wrap;gap:10px}
 .btn-light{background:var(--blush);color:var(--paper-ink);border:0;border-radius:999px;padding:11px 20px;font-size:14px;cursor:pointer;letter-spacing:.04em}
-.btn-light:hover{background:var(--paper)}
+@media (hover:hover){.btn-light:hover{background:var(--paper)}}
 .ks-status{margin:0;font-size:13px;color:var(--blush);min-height:1em}
 .saved-note{font-size:13px;color:#6b6f8e;margin:0}
 [hidden]{display:none!important}
@@ -371,7 +371,7 @@ img{max-width:100%}
         <p>Your voice is how my days begin and how they end. It's the first thing I want to hear when I wake up and the last thing I want to hear before I sleep. On the long days, the tired days, the days when the distance feels a little too heavy, one <span lang="ar" dir="rtl">"هاي حبي"</span> from you still turns everything around.</p>
         <p>And in case you ever need a reminder, here it is in writing, so you can come back to it anytime: I love you on every kind of day. The silly ones, the busy ones, the ones where we laugh until we can't breathe, and even the ones where we drive each other a little crazy. None of them change how I feel about you, not even a little. You're my person, today and every day after it.</p>
         <p>This year asked a lot of us. Distance makes everything heavier, and we've had nights where we hung up hurting. But every single time, we found our way back to each other. That's the part I hold onto. Not the hard days, but the way we keep choosing each other after them.</p>
-        <p>And one day soon, inshaAllah, none of this will need a screen. I'll get to say happy birthday close enough that you feel it. I'll see your smile in person instead of waiting for it to load. We'll have our own home, our own little routines, and all the time in the world.</p>
+        <p>And one day soon, inshaAllah, none of this will need a screen. I'll get to say happy birthday close enough that you feel it. I'll hear you laugh from right beside me instead of through a phone speaker, and finally get to see the smile that goes with it. We'll have our own home, our own little routines, and all the time in the world.</p>
         <p>On my birthday, you prayed that you'd get to be beside me through every stage of my life. I want that too, with my whole heart. This is your 26th, and I want to be there for every single one after it, lighting your candles and hearing your wishes.</p>
         <p>So I made you this. Something special, for the most special, because that's exactly what you are to me.</p>
         <p>Happy 26th birthday, ya ro7i. My 7ubi. My favorite person.</p>
@@ -585,6 +585,20 @@ img{max-width:100%}
     try { return new Date(iso).toLocaleDateString(undefined, { year:'numeric', month:'long', day:'numeric' }); } catch(e){ return ''; }
   }
 
+  // Fire on the finger lifting, not on the browser's later "click", so a single tap always works on phones.
+  function onTap(el, fn){
+    var lastTouch = 0;
+    el.addEventListener('pointerup', function(e){
+      if(e.pointerType === 'mouse') return;
+      lastTouch = Date.now();
+      fn.call(el, e);
+    });
+    el.addEventListener('click', function(e){
+      if(Date.now() - lastTouch < 800) return;
+      fn.call(el, e);
+    });
+  }
+
   /* ---------- wish card ---------- */
   function renderWish(){
     var w = wishes[current];
@@ -661,7 +675,8 @@ img{max-width:100%}
       '</div>',
       function(){
         var nb = document.getElementById('next');
-        nb.addEventListener('click', function(){
+        onTap(nb, function(){
+          if(nb.disabled) return; nb.disabled = true;
           if(last){ ambient = 34; spot.classList.add('off'); leaveThen(sCake, sLetter, function(){ renderKeepsake(); }); }
           else { current++; renderWish(); }
         });
@@ -735,8 +750,8 @@ img{max-width:100%}
     document.getElementById('ks-date').textContent = saved.madeAt ? 'Made on ' + fmtDate(saved.madeAt) : '';
   }
   function openLetter(){ renderKeepsake(); leaveThen(sGift, sWishes); }
-  document.getElementById('to-wishes').addEventListener('click', function(){ renderKeepsake(); leaveThen(sLetter, sWishes); });
-  document.getElementById('to-letter').addEventListener('click', function(){ leaveThen(sWishes, sLetter); });
+  onTap(document.getElementById('to-wishes'), function(){ renderKeepsake(); leaveThen(sLetter, sWishes); });
+  onTap(document.getElementById('to-letter'), function(){ leaveThen(sWishes, sLetter); });
 
   function keepsakeText(){
     var lines = ['Your 26th birthday wishes' + (saved.madeAt ? ' — ' + fmtDate(saved.madeAt) : ''), ''];
@@ -828,7 +843,7 @@ img{max-width:100%}
   });
 
   /* ---------- scene 1 ---------- */
-  gift.addEventListener('click', function(){
+  onTap(gift, function(){
     if(gift.classList.contains('open')) return;
     gift.classList.add('open');
     var g = gift.getBoundingClientRect();
@@ -877,10 +892,10 @@ img{max-width:100%}
       });
     }, 1000);
   });
-  lookback.addEventListener('click', function(){ ambient = 34; openLetter(); });
+  onTap(lookback, function(){ ambient = 34; openLetter(); });
 
   /* ---------- replay ---------- */
-  document.getElementById('replay').addEventListener('click', function(){
+  onTap(document.getElementById('replay'), function(){
     gift.classList.remove('open');
     candles.forEach(function(c){ c.classList.remove('out','active'); c.disabled = false; });
     stars.forEach(function(s){ s.classList.remove('lit'); });
