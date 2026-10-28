@@ -50,7 +50,7 @@ body{
 .eyebrow{font-family:var(--f-body);font-weight:500;font-size:12px;letter-spacing:.28em;text-transform:uppercase;color:var(--muted);margin:0}
 .lead{font-family:var(--f-display);font-size:clamp(26px,7vw,34px);line-height:1.15;margin:0;text-wrap:balance;color:var(--paper);font-weight:400}
 .hint{font-size:14px;color:var(--muted);margin:0;letter-spacing:.02em}
-button{font:inherit}
+button{font:inherit;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 :focus-visible{outline:2px solid var(--stamen);outline-offset:5px;border-radius:6px}
 
 /* ---------- Gift ---------- */
@@ -633,6 +633,7 @@ img{max-width:100%}
     el.addEventListener('pointerdown', function(e){
       if(done) return;
       dragging = true; startX = e.clientX; startP = p;
+      var ta = document.getElementById('wishtext'); if(ta && document.activeElement === ta) ta.blur();
       el.classList.remove('springing');
       try { el.setPointerCapture(e.pointerId); } catch(_){}
       e.preventDefault();
@@ -659,7 +660,6 @@ img{max-width:100%}
       '</div>',
       function(){
         var nb = document.getElementById('next');
-        nb.focus({preventScroll:true});
         nb.addEventListener('click', function(){
           if(last){ ambient = 34; spot.classList.add('off'); leaveThen(sCake, sLetter, function(){ renderKeepsake(); }); }
           else { current++; renderWish(); }
@@ -684,6 +684,9 @@ img{max-width:100%}
   function blowOut(i){
     if(i !== current || phase !== 'wish') return;
     var c = candles[i];
+    // close the keyboard before the card changes, so the next tap lands on the button
+    var t0 = document.getElementById('wishtext');
+    if(t0 && document.activeElement === t0) t0.blur();
     if(c.classList.contains('out')) return;
     phase = 'flying';
     var t = document.getElementById('wishtext');
